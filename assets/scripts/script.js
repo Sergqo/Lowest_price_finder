@@ -16,14 +16,11 @@ form.addEventListener('submit', function (e) {
         return;
     }
 
-    // Optionally add a dropdown or input for condition (e.g., new, used, refurbished)
-    const condition = document.querySelector('#condition-select')?.value || 'any';
-
     // Display a loading message
     displayResults(`Searching for "${keyword}"...`);
 
     // Fetch data from the backend API
-    fetch(`/api/search?keyword=${encodeURIComponent(keyword)}&condition=${encodeURIComponent(condition)}`)
+    fetch(`http://localhost:5000/api/search?keyword=${encodeURIComponent(keyword)}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not OK');
@@ -31,6 +28,7 @@ form.addEventListener('submit', function (e) {
             return response.json();
         })
         .then(data => {
+            console.log('Data fetched:', data); // Debugging statement
             // Check if the backend returned any products
             const products = data.products || [];
             if (products.length > 0) {
@@ -46,7 +44,7 @@ form.addEventListener('submit', function (e) {
         .catch(error => {
             // Handle any errors during the fetch
             displayResults("An error occurred while fetching results.");
-            console.error(error);
+            console.error('Fetch error:', error); // Debugging statement
         });
 });
 
@@ -59,30 +57,17 @@ function displayResults(message) {
 function addResultItem(item) {
     const resultItem = document.createElement('div');
     resultItem.classList.add('result-item');
-    
-    // Create an image element for the product image
-    const productImage = document.createElement('img');
-    productImage.src = item.image || 'placeholder.png'; // Default image if none provided
-    productImage.alt = item.title || 'Product Image';  // Product title as alt text
-    productImage.classList.add('product-image');
-    
+
     // Create a title element
     const title = document.createElement('h3');
-    title.textContent = item.title || 'No title available';
+    title.textContent = item.name || 'No title available';
     
     // Create a price element
     const price = document.createElement('p');
     price.textContent = `Price: $${item.price || 'N/A'}`;
-    
-    // Create a suggested price element (from the backend's analysis)
-    const suggestedPrice = document.createElement('p');
-    suggestedPrice.textContent = `Suggested Selling Price: $${item.suggestedPrice || 'N/A'}`;
-    suggestedPrice.style.fontWeight = 'bold';
-    suggestedPrice.style.color = '#4CAF50';
 
-    // Create a description element
-    const description = document.createElement('p');
-    description.textContent = item.description || 'No description available';
+    const website = document.createElement('p');
+    website.textContent = `Website: ${item.used_API || 'N/A'}`;
     
     // Optionally, create a link to the product page (if available)
     const productLink = document.createElement('a');
@@ -91,11 +76,9 @@ function addResultItem(item) {
     productLink.target = "_blank"; // Open in a new tab
     
     // Append all elements to the result item container
-    resultItem.appendChild(productImage);
     resultItem.appendChild(title);
     resultItem.appendChild(price);
-    resultItem.appendChild(suggestedPrice);
-    resultItem.appendChild(description);
+    resultItem.appendChild(website);
     resultItem.appendChild(productLink);
     
     // Append the result item to the results section
